@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GM • placeOrder()</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#7c3aed; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#3b0764;color:#fff;padding:12px 0;text-align:center}
+    .container{max-width:760px;margin:40px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06)}
+    h1{text-align:center;font-size:22px;margin:0 0 12px}
+    label{display:block;margin-top:10px;font-size:14px;color:#374151}
+    input,select{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{margin-top:12px;width:100%;padding:10px 14px;border:none;border-radius:10px;background:var(--brand);color:#fff;cursor:pointer}
+    .msg{margin-top:12px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    a.back{display:inline-block;margin-top:14px;text-decoration:none;color:var(--brand)}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — General Manager: <em>placeOrder()</em></div>
+
+  <div class="container">
+    <h1>Place Purchase Order</h1>
+
+    <form id="frm">
+      <label>Order Code</label>
+      <input id="orderCode" placeholder="e.g., PO-2025-001" required />
+
+      <label>Supplier</label>
+      <select id="supplierId" required></select>
+
+      <div class="row">
+        <div>
+          <label>Item Name</label>
+          <input id="itemName" placeholder="e.g., Raw Pellets - A" required />
+        </div>
+        <div>
+          <label>Quantity</label>
+          <input id="qty" type="number" min="1" value="1" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Unit Price (LKR)</label>
+          <input id="unitPrice" type="number" min="0" step="0.01" value="0.00" required />
+        </div>
+        <div>
+          <label>Total (auto)</label>
+          <input id="total" type="text" readonly />
+        </div>
+      </div>
+
+      <button class="btn" type="submit">Place Order</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+    <a class="back" href="./gm_dashboard.html">← Back to GM Dashboard</a>
+  </div>
+
+  <script>
+    const $ = (id)=>document.getElementById(id);
+    const msg = $('msg');
+
+    function calcTotal() {
+      const q = parseFloat($('qty').value || 0);
+      const p = parseFloat($('unitPrice').value || 0);
+      $('total').value = (q * p).toFixed(2);
+    }
+
+    ['qty','unitPrice'].forEach(id=>{
+      $(id).addEventListener('input', calcTotal);
+    });
+    calcTotal();
+
+    
+    async function loadSuppliers(){
+      const res = await fetch('./gm_place_order_suppliers.php', { method:'POST' });
+      const out = await res.json();
+      const sel = $('supplierId');
+      sel.innerHTML = '';
+      (out.rows || []).forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.company_name + ' ('+s.id+')';
+        sel.appendChild(opt);
+      });
+    }
+    loadSuppliers();
+
+    
+    document.getElementById('frm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const data = new URLSearchParams();
+      ['orderCode','supplierId','itemName','qty','unitPrice'].forEach(id=>{
+        data.append(id, $(id).value.trim());
+      });
+
+      const res = await fetch('./gm_place_order.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body: data.toString()
+      });
+      const out = await res.json();
+      msg.textContent = out.message || '';
+      msg.className = 'msg ' + (out.success ? 'ok' : 'err');
+      msg.style.display = 'block';
+      if(out.success){ document.getElementById('frm').reset(); calcTotal(); }
+    });
+  </script>
+</body>
+</html>

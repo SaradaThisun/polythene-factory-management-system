@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Users List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0078d7; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#0b2447;color:#fff;padding:12px 0;text-align:center}
+    .container{max-width:1000px;margin:24px auto;padding:0 16px}
+    .card{background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06);padding:16px}
+    h1{margin:0 0 10px;font-size:22px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+    input{padding:9px;border:1px solid #e5e7eb;border-radius:10px}
+    button,.btn{padding:8px 12px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;text-decoration:none;color:var(--text)}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    th{background:#f3f4f6}
+    .msg{margin-top:10px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    a.back{display:inline-block;margin-top:12px;color:var(--brand);text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — View / Update / Delete Users</div>
+  <div class="container">
+    <div class="card">
+      <h1>Users</h1>
+      <div class="toolbar">
+        <input id="q" placeholder="Search by userID / name / email..." />
+        <button onclick="loadUsers()">Search</button>
+        <a class="btn" href="./add_user.html">+ Add User</a>
+        <a class="btn" href="./manager_dashboard.html">← Back</a>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>UserID</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th style="width:160px">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const msg = document.getElementById('msg');
+    const tbody = document.querySelector('#tbl tbody');
+
+    function show(text, ok=true){
+      msg.textContent = text; msg.className = 'msg ' + (ok ? 'ok' : 'err'); msg.style.display='block';
+    }
+
+    async function loadUsers(){
+      msg.style.display='none';
+      const q = document.getElementById('q').value.trim();
+      const res = await fetch('./users_list.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'q='+encodeURIComponent(q)
+      });
+      const out = await res.json();
+      tbody.innerHTML = '';
+      (out.rows || []).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.id}</td>
+          <td>${r.userID}</td>
+          <td>${r.userName}</td>
+          <td>${r.role}</td>
+          <td>${r.email}</td>
+          <td>${r.phone}</td>
+          <td>${r.status}</td>
+          <td>
+            <a class="btn" href="./users_edit.html?id=${r.id}">Edit</a>
+            <button class="btn" onclick="delUser(${r.id})">Delete</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function delUser(id){
+      if(!confirm('Delete this user?')) return;
+      const res = await fetch('./delete_user.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'id='+encodeURIComponent(id)
+      });
+      const out = await res.json();
+      show(out.message, out.success);
+      if(out.success) loadUsers();
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

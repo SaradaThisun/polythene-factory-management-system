@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit User</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0078d7; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#0b2447;color:#fff;padding:12px 0;text-align:center}
+    .container{max-width:700px;margin:40px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06)}
+    h1{text-align:center;font-size:22px;margin:0 0 10px}
+    label{display:block;margin-top:10px;font-size:14px;color:#374151}
+    input,select{width:100%;padding:9px;border:1px solid #e5e7eb;border-radius:10px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .btn{padding:10px 14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+    .msg{margin-top:10px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    a.back{display:inline-block;margin-top:12px;color:var(--brand);text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — Edit User</div>
+  <div class="container">
+    <h1>Edit User</h1>
+    <form id="frm">
+      <input type="hidden" id="id" />
+      <label>User ID (code)</label>
+      <input id="userID" required />
+      <label>User Name</label>
+      <input id="userName" required />
+      <label>NIC</label>
+      <input id="nic" required />
+      <label>Email</label>
+      <input id="email" type="email" required />
+      <label>Phone</label>
+      <input id="phone" required />
+      <label>Role</label>
+      <select id="role">
+        <option>EMPLOYEE</option>
+        <option>SUPERVISOR</option>
+        <option>MANAGER</option>
+        <option>GENERAL_MANAGER</option>
+        <option>ADMIN</option>
+      </select>
+      <label>Status</label>
+      <select id="status">
+        <option>ACTIVE</option>
+        <option>INACTIVE</option>
+      </select>
+
+      <div class="row">
+        <button type="submit" class="btn primary">Update</button>
+        <a class="btn" href="./users_list.html">Cancel</a>
+      </div>
+    </form>
+
+    <div id="msg" class="msg"></div>
+    <a class="back" href="./users_list.html">← Back to Users</a>
+  </div>
+
+  <script>
+    const msg = document.getElementById('msg');
+    function show(t,ok=true){ msg.textContent=t; msg.className='msg '+(ok?'ok':'err'); msg.style.display='block'; }
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+
+    async function loadUser(){
+      const res = await fetch('./get_user.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'id='+encodeURIComponent(id)
+      });
+      const out = await res.json();
+      if(!out.success){ show(out.message,false); return; }
+      const u = out.row;
+      ['id','userID','userName','nic','email','phone'].forEach(k=>document.getElementById(k).value=u[k]);
+      document.getElementById('role').value = u.role;
+      document.getElementById('status').value = u.status;
+    }
+
+    document.getElementById('frm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const data = new URLSearchParams();
+      ['id','userID','userName','nic','email','phone','role','status'].forEach(k=>{
+        data.append(k, document.getElementById(k).value.trim());
+      });
+      const res = await fetch('./update_user.php', {
+        method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:data.toString()
+      });
+      const out = await res.json();
+      show(out.message, out.success);
+      if(out.success) setTimeout(()=>location.href='./users_list.html', 800);
+    });
+
+    if(!id){ show('Missing id parameter', false); }
+    else { loadUser(); }
+  </script>
+</body>
+</html>

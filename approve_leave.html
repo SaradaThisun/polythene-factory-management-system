@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Approve Leave</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0078d7; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, Segoe UI, Arial; background: var(--bg); color: var(--text); }
+    .topbar { background:#0b2447; color:#fff; padding:12px 0; text-align:center; }
+    .container { max-width:600px; margin:40px auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,.06); }
+    h1 { font-size:22px; margin-bottom:10px; text-align:center; }
+    label { font-size:14px; display:block; margin-bottom:5px; color:#374151; }
+    input { width:100%; padding:9px; border:1px solid #e5e7eb; border-radius:10px; }
+    .btn { margin-top:12px; padding:10px 14px; border:none; border-radius:10px; background:var(--brand); color:#fff; cursor:pointer; width:100%; font-size:15px; }
+    .msg { margin-top:12px; padding:10px; border-radius:10px; display:none; text-align:center; }
+    .ok { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .err { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+    a.back { display:inline-block; margin-top:15px; text-decoration:none; color:var(--brand); font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <strong>Poly Color IMS</strong> — Manager Method: <em>approveLeave()</em>
+  </div>
+
+  <div class="container">
+    <h1>Approve Leave Request</h1>
+    <form id="leaveForm">
+      <label>Leave Request ID:</label>
+      <input type="text" id="leaveId" name="leaveId" placeholder="e.g., LR-2025-010" required />
+      <button type="submit" class="btn">Approve</button>
+    </form>
+
+    <div id="msgBox" class="msg"></div>
+    <a class="back" href="./manager_dashboard.html">← Back to Dashboard</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('leaveForm');
+    const msg  = document.getElementById('msgBox');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const leaveId = document.getElementById('leaveId').value.trim();
+      if (leaveId === '') {
+        msg.textContent = 'Please enter a leave request ID';
+        msg.className = 'msg err';
+        msg.style.display = 'block';
+        return;
+      }
+
+      const res = await fetch('./approve_leave.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'leaveId=' + encodeURIComponent(leaveId)
+      });
+
+      const out = await res.json();
+      msg.textContent = out.message;
+      msg.className = 'msg ' + (out.success ? 'ok' : 'err');
+      msg.style.display = 'block';
+    });
+  </script>
+</body>
+</html>

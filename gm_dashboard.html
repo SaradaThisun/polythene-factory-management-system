@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>General Manager Dashboard | Polycolour Polythene Company</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --brand:#7c3aed;       
+      --brand-dark:#5b21b6;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --card:#ffffff;
+      --bg1:#f3e8ff;
+      --bg2:#faf7ff;
+      --shadow:0 12px 28px rgba(2,6,23,.10);
+      --shadow-hover:0 16px 36px rgba(2,6,23,.18);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Segoe UI", system-ui, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 600px at 0% -10%, rgba(167,139,250,.25), transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, rgba(216,180,254,.22), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+    }
+
+    
+    .topbar{
+      position:relative; isolation:isolate;
+      background:linear-gradient(135deg, var(--brand-dark), var(--brand) 60%, #a78bfa);
+      color:#fff; padding:22px 0; box-shadow:var(--shadow); overflow:hidden;
+    }
+    .topbar:after{
+      content:""; position:absolute; inset:auto -20% -60% -20%;
+      height:180%; transform:rotate(-6deg);
+      background:radial-gradient(closest-side, rgba(255,255,255,.18), transparent 70%);
+      filter:blur(18px);
+    }
+    .wrap{max-width:1160px;margin:0 auto;padding:0 18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px}
+    .logo{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:rgba(255,255,255,.2);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+    .tagline{opacity:.9;font-size:14px}
+
+    
+    .container{max-width:1160px;margin:26px auto;padding:0 18px;display:grid;gap:22px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .card:hover{box-shadow:var(--shadow-hover);transition:.25s box-shadow ease}
+    h1{margin:0 0 6px;font-size:26px}
+    .muted{color:var(--muted);font-size:14px}
+
+    
+    .kv{display:grid;grid-template-columns:160px 1fr;gap:10px;margin-top:14px}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      background:#f5f3ff;border:1px solid #ebe9fe;color:#1e293b;
+      border-radius:12px;padding:7px 10px;font-size:13px
+    }
+    .chip .dot{width:8px;height:8px;background:var(--brand);border-radius:99px;box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+
+    
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .span-6{grid-column:span 6}
+    @media (max-width:900px){.span-6{grid-column:span 12}}
+
+    .tile{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      border-radius:14px;border:1px solid #efeafe;background:linear-gradient(180deg,#fff,#fcfbff);
+      padding:16px; box-shadow:var(--shadow);
+      transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      min-height:86px;
+    }
+    .tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:#e7ddff}
+    .left{display:flex;align-items:center;gap:12px}
+    .icon{
+      width:42px;height:42px;display:grid;place-items:center;border-radius:12px;
+      background:linear-gradient(135deg,#f3e8ff,#faf5ff);
+      border:1px solid #ece7ff;color:var(--brand-dark);font-size:20px;font-weight:700
+    }
+    .t-title{font-weight:700}
+    .t-sub{font-size:12px;color:var(--muted)}
+
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:9px 12px;border-radius:10px;border:1px solid #ece7ff;background:#fff;color:var(--brand-dark);
+      text-decoration:none;cursor:pointer;font-weight:600;
+      transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+    .btn:hover{background:#f5f3ff;transform:translateY(-1px);box-shadow:0 6px 14px rgba(91,33,182,.12)}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+    .btn.primary:hover{background:#6d28d9}
+
+    footer{text-align:center;color:var(--muted);font-size:13px;margin:6px 0 24px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  </style>
+</head>
+<body>
+  
+  <div class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        
+        <span>Polycolour Polythene Company</span>
+      </div>
+      <div class="tagline">Management System • General Manager Dashboard</div>
+    </div>
+  </div>
+
+
+  <div class="container">
+    
+    <div class="card">
+      <h1>General Manager Dashboard</h1>
+      
+
+      <div class="kv">
+        <div class="chip"><span class="dot"></span> generalManagerID</div>
+        <div class="chip">GM-2001</div>
+
+        <div class="chip"><span class="dot"></span> salary</div>
+        <div class="chip">250,000 LKR</div>
+
+        <div class="chip"><span class="dot"></span> annualBudget</div>
+        <div class="chip">5,000,000 LKR</div>
+      </div>
+
+      <div class="toolbar">
+        <a class="btn primary" href="./logout.php">Logout</a>
+        
+      </div>
+    </div>
+
+    <!-- Method tiles -->
+    <div class="grid">
+      <div class="span-6">
+        <div class="tile">
+          <div class="left">
+            
+            <div>
+              <div class="t-title">generateReport()</div>
+              <div class="t-sub">Production • Inventory • Finance summaries</div>
+            </div>
+          </div>
+          <a class="btn" href="./gm_generate_report.html">Open</a>
+        </div>
+      </div>
+
+      <div class="span-6">
+        <div class="tile">
+          <div class="left">
+            
+            <div>
+              <div class="t-title">scheduleTask()</div>
+              <div class="t-sub">Assign and schedule tasks to employees</div>
+            </div>
+          </div>
+          <a class="btn" href="./gm_schedule_task.html">Open</a>
+        </div>
+      </div>
+
+      <div class="span-6">
+        <div class="tile">
+          <div class="left">
+            
+            <div>
+              <div class="t-title">generateGRN()</div>
+              <div class="t-sub">Create Goods Received Notes for orders</div>
+            </div>
+          </div>
+          <a class="btn" href="./gm_generate_grn.html">Open</a>
+        </div>
+      </div>
+
+      <div class="span-6">
+        <div class="tile">
+          <div class="left">
+            
+            <div>
+              <div class="t-title">placeOrder()</div>
+              <div class="t-sub">Place supplier purchase orders (budget-aware)</div>
+            </div>
+          </div>
+          <a class="btn" href="./gm_place_order.html">Open</a>
+        </div>
+      </div>
+
+      <div class="span-6">
+        <div class="tile">
+          <div class="left">
+            
+            <div>
+              <div class="t-title">Orders</div>
+              <div class="t-sub">View • Update • Delete purchase orders</div>
+            </div>
+          </div>
+          <a class="btn" href="./gm_orders_list.html">Open</a>
+        </div>
+      </div>
+    </div>
+
+    <footer>© 2025 Polycolour Polythene Company • Management System</footer>
+  </div>
+</body>
+</html>

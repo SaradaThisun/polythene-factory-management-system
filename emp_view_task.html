@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee • viewTask()</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0ea5e9; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#075985;color:#fff;padding:12px 0;text-align:center}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .card{background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06);padding:16px}
+    h1{margin:0 0 10px;font-size:22px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+    input,select{padding:9px;border:1px solid #e5e7eb;border-radius:10px}
+    .btn{padding:9px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    th{background:#f3f4f6}
+    .muted{color:var(--muted);font-size:13px}
+    .msg{margin-top:10px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    a.back{display:inline-block;margin-top:12px;text-decoration:none;color:#0ea5e9}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — Employee: <em>viewTask()</em></div>
+  <div class="wrap">
+    <div class="card">
+      <h1>My Tasks</h1>
+      <div class="toolbar">
+        <input id="q" placeholder="Search by code/title..." />
+        <select id="status">
+          <option value="">All Status</option>
+          <option>ASSIGNED</option>
+          <option>ACCEPTED</option>
+          <option>IN_PROGRESS</option>
+          <option>COMPLETED</option>
+          <option>CANCELLED</option>
+        </select>
+        <input id="fromDate" type="date" />
+        <input id="toDate" type="date" />
+        <button class="btn" onclick="load()">Filter</button>
+        <button class="btn" onclick="resetFilters()">Reset</button>
+        <span class="muted" id="count"></span>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>Task Code</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Due Date</th>
+            <th>Assigned</th>
+            <th>Accepted</th>
+            <th>Started</th>
+            <th>Completed</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <a class="back" href="./employee_dashboard.html">← Back to Employee Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    const tbody = document.querySelector('#tbl tbody');
+    const msg = document.getElementById('msg');
+    const countEl = document.getElementById('count');
+
+    function note(t, ok=true){ msg.textContent=t; msg.className='msg '+(ok?'ok':'err'); msg.style.display='block'; }
+
+    function resetFilters(){
+      document.getElementById('q').value='';
+      document.getElementById('status').value='';
+      document.getElementById('fromDate').value='';
+      document.getElementById('toDate').value='';
+      load();
+    }
+
+    async function load(){
+      msg.style.display='none';
+      const qs = new URLSearchParams();
+      qs.append('q', document.getElementById('q').value.trim());
+      qs.append('status', document.getElementById('status').value);
+      qs.append('fromDate', document.getElementById('fromDate').value);
+      qs.append('toDate', document.getElementById('toDate').value);
+
+      const res = await fetch('./emp_tasks_query.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:qs.toString() });
+      const out = await res.json();
+
+      if(!out.success){ note(out.message || 'Failed to load tasks', false); return; }
+
+      tbody.innerHTML='';
+      (out.rows||[]).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.task_code}</td>
+          <td>${r.title}</td>
+          <td>${r.status}</td>
+          <td>${r.due_date || '-'}</td>
+          <td>${r.created_at}</td>
+          <td>${r.accepted_at || '-'}</td>
+          <td>${r.started_at || '-'}</td>
+          <td>${r.completed_at || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      countEl.textContent = (out.rows?.length || 0) + ' task(s)';
+    }
+
+    load();
+  </script>
+</body>
+</html>

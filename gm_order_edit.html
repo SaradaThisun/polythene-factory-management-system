@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GM • Edit Order</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--brand:#7c3aed;--bg:#f7f9fc;--card:#fff;--text:#111827}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#3b0764;color:#fff;padding:12px 0;text-align:center}
+    .wrap{max-width:760px;margin:40px auto;background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06);padding:20px}
+    h1{text-align:center;font-size:22px;margin:0 0 12px}
+    label{display:block;margin-top:10px;font-size:14px}
+    input,select{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{margin-top:12px;padding:10px 14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer}
+    .btn.primary{background:#7c3aed;color:#fff;border-color:#7c3aed}
+    .msg{margin-top:10px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — GM: Edit Order</div>
+  <div class="wrap">
+    <h1>Edit Purchase Order</h1>
+
+    <form id="frm">
+      <input type="hidden" id="id" />
+      <label>Order Code</label>
+      <input id="order_code" required />
+
+      <label>Supplier</label>
+      <select id="supplier_id" required></select>
+
+      <div class="row">
+        <div>
+          <label>Item Name</label>
+          <input id="item_name" required />
+        </div>
+        <div>
+          <label>Quantity</label>
+          <input id="qty" type="number" min="1" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Unit Price (LKR)</label>
+          <input id="unit_price" type="number" min="0" step="0.01" required />
+        </div>
+        <div>
+          <label>Status</label>
+          <select id="status">
+            <option>PLACED</option>
+            <option>CANCELLED</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn primary" type="submit">Update</button>
+      <a class="btn" href="./gm_orders_list.html">Cancel</a>
+    </form>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <script>
+    const P = new URLSearchParams(location.search);
+    const id = P.get('id');
+    const msg = document.getElementById('msg');
+    function note(t,ok=true){ msg.textContent=t; msg.className='msg '+(ok?'ok':'err'); msg.style.display='block'; }
+    const $ = (id)=>document.getElementById(id);
+
+    async function loadSuppliers(){
+      const res = await fetch('./gm_place_order_suppliers.php', {method:'POST'});
+      const out = await res.json();
+      const sel = $('supplier_id'); sel.innerHTML='';
+      (out.rows||[]).forEach(s=>{
+        const op = document.createElement('option');
+        op.value = s.id; op.textContent = s.company_name + ' ('+s.id+')';
+        sel.appendChild(op);
+      });
+    }
+
+    async function loadOrder(){
+      const res = await fetch('./gm_get_order.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'id='+encodeURIComponent(id)});
+      const out = await res.json();
+      if(!out.success){ note(out.message,false); return; }
+      const r = out.row;
+      $('id').value = r.id;
+      $('order_code').value = r.order_code;
+      $('supplier_id').value = r.supplier_id;
+      $('item_name').value = r.item_name;
+      $('qty').value = r.qty;
+      $('unit_price').value = r.unit_price;
+      $('status').value = r.status;
+    }
+
+    document.getElementById('frm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const qs = new URLSearchParams();
+      ['id','order_code','supplier_id','item_name','qty','unit_price','status'].forEach(k=>qs.append(k, $(k).value));
+      const res = await fetch('./gm_update_order.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:qs.toString()});
+      const out = await res.json();
+      note(out.message, out.success);
+      if(out.success) setTimeout(()=>location.href='./gm_orders_list.html', 700);
+    });
+
+    if(!id){ note('Missing id', false); }
+    else { await loadSuppliers(); await loadOrder(); }
+  </script>
+</body>
+</html>

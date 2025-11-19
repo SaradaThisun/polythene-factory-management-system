@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee • requestLeave()</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0ea5e9; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#075985;color:#fff;padding:12px 0;text-align:center}
+    .container{max-width:720px;margin:40px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06)}
+    h1{text-align:center;font-size:22px;margin:0 0 12px}
+    label{display:block;margin-top:10px;font-size:14px;color:#374151}
+    input,textarea{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{margin-top:12px;width:100%;padding:10px 14px;border:none;border-radius:10px;background:var(--brand);color:#fff;cursor:pointer}
+    .msg{margin-top:12px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    th{background:#f3f4f6}
+    a.back{display:inline-block;margin-top:14px;text-decoration:none;color:var(--brand)}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — Employee: <em>requestLeave()</em></div>
+
+  <div class="container">
+    <h1>Request Leave</h1>
+
+    <form id="frm">
+      <div class="row">
+        <div>
+          <label>From Date</label>
+          <input type="date" id="fromDate" required />
+        </div>
+        <div>
+          <label>To Date</label>
+          <input type="date" id="toDate" required />
+        </div>
+      </div>
+      <label>Reason (optional)</label>
+      <textarea id="reason" rows="3" placeholder="e.g., Medical"></textarea>
+
+      <button class="btn" type="submit">Submit Leave Request</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+
+    <h3 style="margin-top:18px">My Recent Leave Requests</h3>
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Status</th>
+          <th>Approved By</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <a class="back" href="./employee_dashboard.html">← Back to Employee Dashboard</a>
+  </div>
+
+  <script>
+    const msg = document.getElementById('msg');
+    const tbody = document.querySelector('#tbl tbody');
+
+    function note(t, ok=true){ msg.textContent=t; msg.className='msg '+(ok?'ok':'err'); msg.style.display='block'; }
+
+    
+    document.getElementById('frm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const qs = new URLSearchParams();
+      qs.append('fromDate', document.getElementById('fromDate').value);
+      qs.append('toDate',   document.getElementById('toDate').value);
+      qs.append('reason',   document.getElementById('reason').value.trim());
+
+      const res = await fetch('./emp_request_leave.php', {
+        method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:qs.toString()
+      });
+      const out = await res.json();
+      note(out.message, out.success);
+      if(out.success){ e.target.reset(); loadMyLeaves(); }
+    });
+
+    async function loadMyLeaves(){
+      const res = await fetch('./emp_my_leaves.php', { method:'POST' });
+      const out = await res.json();
+      tbody.innerHTML = '';
+      (out.rows||[]).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.request_code}</td><td>${r.from_date}</td><td>${r.to_date}</td><td>${r.status}</td><td>${r.approved_by || '-'}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    loadMyLeaves();
+  </script>
+</body>
+</html>

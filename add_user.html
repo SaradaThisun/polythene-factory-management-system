@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add User</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0078d7; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, Segoe UI, Arial; background: var(--bg); color: var(--text); }
+    .topbar { background:#0b2447; color:#fff; padding:12px 0; text-align:center; }
+    .container { max-width:700px; margin:40px auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,.06); }
+    h1 { font-size:22px; margin-bottom:10px; text-align:center; }
+    label { font-size:14px; display:block; margin-bottom:5px; color:#374151; }
+    input, select { width:100%; padding:9px; border:1px solid #e5e7eb; border-radius:10px; }
+    .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+    .btn { margin-top:12px; padding:10px 14px; border:none; border-radius:10px; background:var(--brand); color:#fff; cursor:pointer; width:100%; font-size:15px; }
+    .msg { margin-top:12px; padding:10px; border-radius:10px; display:none; text-align:center; }
+    .ok { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .err { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+    a.back { display:inline-block; margin-top:15px; text-decoration:none; color:var(--brand); font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <strong>Poly Color IMS</strong> — Manager Method: <em>addUser()</em>
+  </div>
+
+  <div class="container">
+    <h1>Add New User</h1>
+    <form id="userForm">
+      <div class="grid">
+        <div>
+          <label>User ID (code)</label>
+          <input id="userID" name="userID" placeholder="e.g., emp003" required />
+        </div>
+        <div>
+          <label>User Name</label>
+          <input id="userName" name="userName" placeholder="e.g., Nimal Perera" required />
+        </div>
+        <div>
+          <label>NIC</label>
+          <input id="nic" name="nic" placeholder="e.g., 123456789V" required />
+        </div>
+        <div>
+          <label>Email</label>
+          <input id="email" name="email" type="email" placeholder="e.g., user@example.com" required />
+        </div>
+        <div>
+          <label>Phone</label>
+          <input id="phone" name="phone" placeholder="e.g., 0771234567" required />
+        </div>
+        <div>
+          <label>Role</label>
+          <select id="role" name="role">
+            <option>EMPLOYEE</option>
+            <option>SUPERVISOR</option>
+            <option>MANAGER</option>
+            <option>GENERAL_MANAGER</option>
+            <option>ADMIN</option>
+          </select>
+        </div>
+        <div>
+          <label>Password (plain text)</label>
+          <input id="password" name="password" type="text" placeholder="e.g., Emp@123" required />
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Add User</button>
+    </form>
+
+    <div id="msgBox" class="msg"></div>
+    <a class="back" href="./manager_dashboard.html">← Back to Dashboard</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('userForm');
+    const msg  = document.getElementById('msgBox');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = new URLSearchParams();
+      ['userID','userName','nic','email','phone','role','password'].forEach(id => {
+        data.append(id, document.getElementById(id).value.trim());
+      });
+
+      const res = await fetch('./add_user.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: data.toString()
+      });
+
+      const out = await res.json();
+      msg.textContent = out.message;
+      msg.className = 'msg ' + (out.success ? 'ok' : 'err');
+      msg.style.display = 'block';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>View Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0078d7; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, Segoe UI, Arial; background: var(--bg); color: var(--text); }
+    .topbar { background:#0b2447; color:#fff; padding:12px 0; text-align:center; }
+    .container { max-width:700px; margin:40px auto; background:var(--card); padding:20px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,.06); }
+    h1 { font-size:22px; margin-bottom:10px; text-align:center; }
+    label { font-size:14px; display:block; margin-bottom:5px; color:#374151; }
+    select { width:100%; padding:9px; border:1px solid #e5e7eb; border-radius:10px; }
+    .btn { margin-top:12px; padding:10px 14px; border:none; border-radius:10px; background:var(--brand); color:#fff; cursor:pointer; width:100%; font-size:15px; }
+    .box { margin-top:12px; padding:12px; border-radius:10px; background:#f8fafc; border:1px solid #e5e7eb; }
+    a.back { display:inline-block; margin-top:15px; text-decoration:none; color:var(--brand); font-size:14px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { padding:8px; border-bottom:1px solid #e5e7eb; text-align:left; font-size:14px; }
+    th { background:#f3f4f6; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <strong>Poly Color IMS</strong> — Manager Method: <em>viewReport()</em>
+  </div>
+
+  <div class="container">
+    <h1>View Report</h1>
+
+    <label>Report Type</label>
+    <select id="reportType">
+      <option value="production">Production</option>
+      <option value="inventory">Inventory</option>
+      <option value="finance">Finance</option>
+    </select>
+
+    <button class="btn" id="btnView">View Report</button>
+
+    <div id="result" class="box" style="display:none;"></div>
+    <a class="back" href="./manager_dashboard.html">← Back to Dashboard</a>
+  </div>
+
+  <script>
+    const result = document.getElementById('result');
+    document.getElementById('btnView').addEventListener('click', async () => {
+      const reportType = document.getElementById('reportType').value;
+      const res = await fetch('./view_report.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'reportType=' + encodeURIComponent(reportType)
+      });
+      const out = await res.json();
+
+      // Simple rendering
+      result.style.display = 'block';
+      let html = `<strong>${out.title || 'Report'}</strong><br>${out.message || ''}`;
+
+      if (out.reportType === 'production') {
+        html += `<div style="margin-top:6px">Weekly Production (kg): <strong>${out.weeklyProductionKg}</strong></div>`;
+        if (out.latest && out.latest.length) {
+          html += `<table><thead><tr><th>Logged At</th><th>Quantity (kg)</th></tr></thead><tbody>`;
+          out.latest.forEach(r => html += `<tr><td>${r.logged_at}</td><td>${r.quantity_kg}</td></tr>`);
+          html += `</tbody></table>`;
+        }
+      }
+      if (out.reportType === 'inventory') {
+        html += `<div style="margin-top:6px">Total Items In Stock: <strong>${out.totalStock}</strong></div>`;
+        if (out.items && out.items.length) {
+          html += `<table><thead><tr><th>Item</th><th>Qty</th></tr></thead><tbody>`;
+          out.items.forEach(r => html += `<tr><td>${r.item_name}</td><td>${r.qty}</td></tr>`);
+          html += `</tbody></table>`;
+        }
+      }
+      if (out.reportType === 'finance') {
+        html += `<div style="margin-top:6px">Net (Last 7 Days): <strong>LKR ${out.netLast7d}</strong></div>`;
+        if (out.recent && out.recent.length) {
+          html += `<table><thead><tr><th>Type</th><th>Amount</th><th>Date</th></tr></thead><tbody>`;
+          out.recent.forEach(r => html += `<tr><td>${r.txn_type}</td><td>${r.amount}</td><td>${r.occurred_at}</td></tr>`);
+          html += `</tbody></table>`;
+        }
+      }
+
+      result.innerHTML = html;
+    });
+  </script>
+</body>
+</html>

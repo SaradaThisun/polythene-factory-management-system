@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee • acceptTask()</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#0ea5e9; --bg:#f7f9fc; --card:#fff; --text:#111827; --muted:#6b7280; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#075985;color:#fff;padding:12px 0;text-align:center}
+    .wrap{max-width:1000px;margin:24px auto;padding:0 16px}
+    .card{background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06);padding:16px}
+    h1{margin:0 0 8px;font-size:22px}
+    h2{margin:10px 0 6px;font-size:16px}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    th{background:#f3f4f6}
+    .btn{padding:8px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+    .msg{margin-top:10px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    a.back{display:inline-block;margin-top:12px;text-decoration:none;color:var(--brand)}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — Employee: <em>acceptTask()</em></div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Accept Assigned Tasks</h1>
+      <div id="msg" class="msg"></div>
+
+      <h2>Tasks assigned to me (waiting for acceptance)</h2>
+      <table id="tblAssigned">
+        <thead>
+          <tr>
+            <th>Task Code</th><th>Title</th><th>Due Date</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h2 style="margin-top:18px">My recent tasks</h2>
+      <table id="tblMine">
+        <thead>
+          <tr>
+            <th>Task Code</th><th>Title</th><th>Status</th><th>Due Date</th><th>Accepted At</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <a class="back" href="./employee_dashboard.html">← Back to Employee Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    const msg = document.getElementById('msg');
+    const tbAssigned = document.querySelector('#tblAssigned tbody');
+    const tbMine = document.querySelector('#tblMine tbody');
+
+    function note(t, ok=true){ msg.textContent=t; msg.className='msg '+(ok?'ok':'err'); msg.style.display='block'; }
+
+    async function load(){
+      msg.style.display='none';
+      const res = await fetch('./emp_tasks_list.php', {method:'POST'});
+      const out = await res.json();
+
+      tbAssigned.innerHTML = '';
+      (out.assigned||[]).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.task_code}</td>
+          <td>${r.title}</td>
+          <td>${r.due_date || '-'}</td>
+          <td><button class="btn primary" onclick="accept(${r.id})">Accept</button></td>`;
+        tbAssigned.appendChild(tr);
+      });
+
+      tbMine.innerHTML = '';
+      (out.mine||[]).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.task_code}</td>
+          <td>${r.title}</td>
+          <td>${r.status}</td>
+          <td>${r.due_date || '-'}</td>
+          <td>${r.accepted_at || '-'}</td>`;
+        tbMine.appendChild(tr);
+      });
+    }
+
+    async function accept(id){
+      const res = await fetch('./emp_accept_task.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'id='+encodeURIComponent(id)
+      });
+      const out = await res.json();
+      note(out.message, out.success);
+      if(out.success) load();
+    }
+
+    load();
+  </script>
+</body>
+</html>

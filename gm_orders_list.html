@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GM • Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--brand:#7c3aed;--bg:#f7f9fc;--card:#fff;--text:#111827;--muted:#6b7280}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+    .topbar{background:#3b0764;color:#fff;padding:12px 0;text-align:center}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .card{background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06);padding:16px}
+    h1{margin:0 0 8px;font-size:22px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+    input,select{padding:9px;border:1px solid #e5e7eb;border-radius:10px}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;text-decoration:none;color:#111827}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    th{background:#f3f4f6}
+    .msg{margin-top:10px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+  </style>
+</head>
+<body>
+  <div class="topbar"><strong>Poly Color IMS</strong> — GM: Orders</div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Purchase Orders</h1>
+      <div class="toolbar">
+        <input id="q" placeholder="Search by code / item / supplier..." />
+        <select id="status">
+          <option value="">All</option>
+          <option>PLACED</option>
+          <option>CANCELLED</option>
+        </select>
+        <button class="btn" onclick="loadOrders()">Search</button>
+        <a class="btn" href="./gm_place_order.html">+ Place Order</a>
+        <a class="btn" href="./gm_dashboard.html">← GM Dashboard</a>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Supplier</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Unit</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th style="width:160px">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const tbody = document.querySelector('#tbl tbody');
+    const msg = document.getElementById('msg');
+    function note(t, ok=true){ msg.textContent=t; msg.className='msg '+(ok?'ok':'err'); msg.style.display='block'; }
+
+    async function loadOrders(){
+      msg.style.display='none';
+      const qs = new URLSearchParams();
+      qs.append('q', document.getElementById('q').value.trim());
+      qs.append('status', document.getElementById('status').value);
+      const res = await fetch('./gm_orders_list.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:qs.toString()});
+      const out = await res.json();
+      tbody.innerHTML = '';
+      (out.rows||[]).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.order_code}</td>
+          <td>${r.company_name} (${r.supplier_id})</td>
+          <td>${r.item_name}</td>
+          <td>${r.qty}</td>
+          <td>${r.unit_price}</td>
+          <td>${r.total_amount}</td>
+          <td>${r.status}</td>
+          <td>${r.created_at}</td>
+          <td>
+            <a class="btn" href="./gm_order_edit.html?id=${r.id}">Edit</a>
+            <button class="btn" onclick="del(${r.id})">Delete</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function del(id){
+      if(!confirm('Delete this order?')) return;
+      const res = await fetch('./gm_delete_order.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'id='+encodeURIComponent(id) });
+      const out = await res.json();
+      note(out.message, out.success);
+      if(out.success) loadOrders();
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Polycolour Polythene Company | Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --brand:#0078d7;
+      --brand-dark:#005fa3;
+      --bg:#f0f4fa;
+      --card:#fff;
+      --text:#111827;
+      --muted:#6b7280;
+    }
+    *{box-sizing:border-box;}
+    body {
+      margin:0;
+      font-family: "Segoe UI", system-ui, Arial;
+      background: linear-gradient(135deg, #e0ecff 0%, #f7f9fc 100%);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .wrap {
+      width:100%;
+      max-width:420px;
+      background:var(--card);
+      padding:30px 24px 26px;
+      border-radius:14px;
+      box-shadow:0 8px 20px rgba(0,0,0,.1);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo {
+      text-align:center;
+      margin-bottom:14px;
+    }
+    .logo h2 {
+      margin:0;
+      font-size:22px;
+      color:var(--brand-dark);
+    }
+    .logo p {
+      margin:4px 0 12px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    h1 {
+      text-align:center;
+      font-size:20px;
+      margin:0 0 18px;
+      color:var(--text);
+    }
+    label {
+      display:block;
+      margin-top:10px;
+      font-size:14px;
+      color:#374151;
+      font-weight:500;
+    }
+    input {
+      width:100%;
+      padding:11px;
+      border:1px solid #d0d7e1;
+      border-radius:10px;
+      margin-top:4px;
+      font-size:15px;
+      outline:none;
+      transition:border .2s;
+    }
+    input:focus {
+      border-color:var(--brand);
+      box-shadow:0 0 0 3px rgba(0,120,215,0.15);
+    }
+    .btn {
+      margin-top:16px;
+      width:100%;
+      padding:11px 14px;
+      border:none;
+      border-radius:10px;
+      background:var(--brand);
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+      font-size:15px;
+      transition:background .25s;
+    }
+    .btn:hover { background:var(--brand-dark); }
+    .msg {
+      margin-top:12px;
+      padding:10px;
+      border-radius:10px;
+      display:none;
+      text-align:center;
+    }
+    .err {
+      background:#fef2f2;
+      color:#991b1b;
+      border:1px solid #fecaca;
+    }
+    footer {
+      text-align:center;
+      margin-top:18px;
+      font-size:13px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">
+      <h2>Polycolour Polythene Company</h2>
+      <p>Management System</p>
+    </div>
+
+    <h1>Login to Continue</h1>
+
+    <form id="frm">
+      <label>User ID</label>
+      <input id="userID" name="userID" placeholder="Enter User ID" required />
+      <label>Password</label>
+      <input id="password" name="password" type="password" placeholder="Password" required />
+      <button class="btn" type="submit">Sign In</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+
+    <footer>
+      © 2025 Polycolour Polythene Company<br>
+      <small>All Rights Reserved</small>
+    </footer>
+  </div>
+
+  <script>
+    const frm = document.getElementById('frm');
+    const msg = document.getElementById('msg');
+
+    frm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const data = new URLSearchParams();
+      data.append('userID', document.getElementById('userID').value.trim());
+      data.append('password', document.getElementById('password').value);
+
+      const res = await fetch('./login.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body: data.toString()
+      });
+      const out = await res.json();
+
+      if(out.success){
+        location.href = out.redirect;
+      }else{
+        msg.textContent = out.message || 'Login failed';
+        msg.className = 'msg err';
+        msg.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
